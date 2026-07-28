@@ -1,0 +1,14 @@
+[project]
+name = "nexora-engine"
+version = "0.1.0"
+description = "Scalable Django starter project for Nexora Engine"
+requires-python = ">=3.11"
+dependencies = [
+  "Django>=5.2,<5.3",
+  "celery>=5.6,<6.0",
+  "python-dotenv>=1.0,<2.0",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
