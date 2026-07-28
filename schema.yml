@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: Nexora Engine API
+  version: 1.0.0
+  description: Advanced API documentation for Nexora Engine
+paths:
+  /api/v1/health/:
+    get:
+      operationId: v1_health_retrieve
+      description: Returns a lightweight status payload for monitoring and deployment
+        checks.
+      summary: Health check
+      tags:
+      - Health
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Application is healthy
+  /api/v1/version/:
+    get:
+      operationId: v1_version_retrieve
+      description: Returns application and runtime version information.
+      summary: Version info
+      tags:
+      - Health
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Version details returned
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
