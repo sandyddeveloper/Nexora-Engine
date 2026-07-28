@@ -18,8 +18,17 @@ class SettingsDefaultsTests(unittest.TestCase):
 
             os.environ.setdefault("SECRET_KEY", "test-secret-key")
             os.environ.setdefault("DEBUG", "False")
+            os.environ["ALLOWED_HOSTS"] = ""
+            os.environ["CORS_ALLOWED_ORIGINS"] = ""
+            os.environ["TIME_ZONE"] = ""
 
-            sys.modules.pop("config.settings", None)
+            for module_name in [
+                name
+                for name in list(sys.modules)
+                if name == "config.settings" or name.startswith("config.settings")
+            ]:
+                sys.modules.pop(module_name, None)
+
             import config.settings as settings_module
 
             reloaded_settings = importlib.reload(settings_module)
