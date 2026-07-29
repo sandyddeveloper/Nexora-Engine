@@ -1,43 +1,31 @@
-version: "3.9"
 services:
   web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: nexora-engine
+
+    command: >
+      gunicorn config.wsgi:application
+      --bind 0.0.0.0:8000
+      --workers 3
+      --timeout 120
+
     env_file:
       - .env
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
 
-  postgres:
-    image: postgres:17
-    environment:
-      POSTGRES_DB: ${DB_NAME:-nexora_engine}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-    ports:
-      - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-nexora_engine}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      - .:/app
+      - ../../infrastructure/volumes/static:/app/staticfiles
 
-  redis:
-    image: redis:8-alpine
     ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
+      - "8000:8000"
 
-volumes:
-  postgres_data:
-  redis_data:
+    networks:
+      - nexora-network
+
+networks:
+  nexora-network:
+    external: true
+    name: nexora-infra_nexora-network
