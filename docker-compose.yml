@@ -25,6 +25,27 @@ services:
     networks:
       - nexora-network
 
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: nexora-celery-worker
+
+    command: celery -A config worker --loglevel=info
+
+    env_file:
+      - .env
+
+    volumes:
+      - .:/app
+
+    depends_on:
+      - web
+
+    networks:
+      - nexora-network
+
 networks:
   nexora-network:
     external: true
