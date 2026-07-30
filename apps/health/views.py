@@ -1,6 +1,9 @@
+import os
 import sys
 from datetime import datetime, timezone
+from urllib.parse import urlparse
 
+import redis
 from django.conf import settings
 from django.db import connection
 from drf_spectacular.utils import OpenApiResponse, extend_schema
@@ -19,6 +22,24 @@ def _check_database() -> str:
         return "disconnected"
 
 
+def _check_redis() -> str:
+    redis_url = os.getenv("REDIS_URL") or settings.CELERY_BROKER_URL
+    if not redis_url:
+        return "not_configured"
+
+    parsed = urlparse(redis_url)
+    if parsed.scheme not in {"redis", "rediss"}:
+        return "invalid_url"
+
+    try:
+        client = redis.Redis.from_url(redis_url, socket_connect_timeout=2)
+        if client.ping():
+            return "connected"
+    except redis.RedisError:
+        pass
+    return "disconnected"
+
+
 @extend_schema(
     tags=["Health"],
     summary="Health check",
@@ -31,12 +52,14 @@ def _check_database() -> str:
 def health_check(request):
     """Return a lightweight health payload for monitoring systems."""
     database_status = _check_database()
+    redis_status = _check_redis()
+    status = "healthy" if database_status == "connected" and redis_status == "connected" else "degraded"
     return success_response(
         message="Application is healthy",
         data={
-            "status": "healthy" if database_status == "connected" else "degraded",
+            "status": status,
             "database": database_status,
-            "redis": "not_configured",
+            "redis": redis_status,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         },
     )

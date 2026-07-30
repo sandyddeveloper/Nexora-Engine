@@ -232,6 +232,8 @@ CELERY_BROKER_URL = os.getenv(
     "redis://nexora-redis:6379/0",
 )
 
+REDIS_URL = os.getenv("REDIS_URL", CELERY_BROKER_URL)
+
 CELERY_RESULT_BACKEND = os.getenv(
     "CELERY_RESULT_BACKEND",
     "redis://nexora-redis:6379/1",
