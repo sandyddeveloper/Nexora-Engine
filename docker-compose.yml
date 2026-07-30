@@ -22,6 +22,8 @@ services:
     ports:
       - "8000:8000"
 
+    restart: unless-stopped
+
     networks:
       - nexora-network
 
@@ -40,8 +42,36 @@ services:
     volumes:
       - .:/app
 
+    restart: unless-stopped
+
     depends_on:
       - web
+
+    networks:
+      - nexora-network
+
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: nexora-flower
+
+    command: >
+      celery -A config flower
+      --port=5555
+      --basic-auth=${FLOWER_USER}:${FLOWER_PASSWORD}
+
+    env_file:
+      - .env
+
+    volumes:
+      - .:/app
+
+    ports:
+      - "5555:5555"
+
+    restart: unless-stopped
 
     networks:
       - nexora-network
