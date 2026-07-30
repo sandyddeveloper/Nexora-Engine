@@ -7,15 +7,13 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-      - name: Deploy to Production
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            ~/server/scripts/deploy.sh
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy
+        run: |
+          chmod +x ~/server/scripts/deploy.sh
+          ~/server/scripts/deploy.sh
