@@ -37,10 +37,7 @@ def updated_response(message: str = "Resource updated successfully.", data=None)
 
 
 def deleted_response(message: str = "Resource deleted successfully."):
-    return Response(
-        _base_payload(True, message, data={}, errors=None),
-        status=drf_status.HTTP_204_NO_CONTENT,
-    )
+    return Response(status=drf_status.HTTP_204_NO_CONTENT)
 
 
 def list_response(

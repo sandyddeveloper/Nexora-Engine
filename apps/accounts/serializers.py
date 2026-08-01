@@ -45,6 +45,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     """Validation serializer for user creation."""
 
     password = serializers.CharField(write_only=True, min_length=8)
+    username = serializers.CharField(required=False, allow_blank=True, default="")
 
     class Meta:
         model = User

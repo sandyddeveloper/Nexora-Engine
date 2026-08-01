@@ -1,0 +1,101 @@
+"""URL pattern routing for projects app."""
+
+from django.urls import path
+
+from .views import (
+    BenchManagementAPIView,
+    ExecutiveDashboardAPIView,
+    KanbanBoardDetailAPIView,
+    KanbanBoardListCreateAPIView,
+    PortfolioListCreateAPIView,
+    ProductivityMetricsAPIView,
+    ProgramListCreateAPIView,
+    ProjectActivateAPIView,
+    ProjectArchiveAPIView,
+    ProjectCompleteAPIView,
+    ProjectDetailAPIView,
+    ProjectHealthScoreAPIView,
+    ProjectListCreateAPIView,
+    ProjectMemberListAddAPIView,
+    ProjectPauseAPIView,
+    ProjectResumeAPIView,
+    ProjectSettingsAPIView,
+    ReleaseListCreateAPIView,
+    ResourceAllocationListCreateAPIView,
+    ResourceCapacityAPIView,
+    ResourceSkillMatchAPIView,
+    SprintBurndownReportAPIView,
+    SprintCompleteAPIView,
+    SprintDetailAPIView,
+    SprintListCreateAPIView,
+    SprintStartAPIView,
+    SprintVelocityReportAPIView,
+    TaskActivityTimelineAPIView,
+    TaskChecklistListCreateAPIView,
+    TaskCommentListCreateAPIView,
+    TaskDependencyListCreateAPIView,
+    TaskDetailAPIView,
+    TaskListCreateAPIView,
+    TaskMoveOnBoardAPIView,
+    TimeEntryListCreateAPIView,
+    TimerStartAPIView,
+    TimerStopAPIView,
+    TimesheetApproveAPIView,
+    TimesheetListCreateAPIView,
+    TimesheetRejectAPIView,
+    WBSTreeAPIView,
+)
+
+app_name = "projects"
+
+urlpatterns = [
+    # Project Endpoints
+    path("", ProjectListCreateAPIView.as_view(), name="project-list-create"),
+    path("<uuid:pk>/", ProjectDetailAPIView.as_view(), name="project-detail"),
+    path("<uuid:pk>/activate/", ProjectActivateAPIView.as_view(), name="project-activate"),
+    path("<uuid:pk>/pause/", ProjectPauseAPIView.as_view(), name="project-pause"),
+    path("<uuid:pk>/resume/", ProjectResumeAPIView.as_view(), name="project-resume"),
+    path("<uuid:pk>/complete/", ProjectCompleteAPIView.as_view(), name="project-complete"),
+    path("<uuid:pk>/archive/", ProjectArchiveAPIView.as_view(), name="project-archive"),
+    path("<uuid:pk>/members/", ProjectMemberListAddAPIView.as_view(), name="project-member-list-add"),
+    path("<uuid:pk>/settings/", ProjectSettingsAPIView.as_view(), name="project-settings"),
+    path("<uuid:pk>/health/", ProjectHealthScoreAPIView.as_view(), name="project-health-score"),
+    # Task, WBS & Work Management Endpoints
+    path("tasks/", TaskListCreateAPIView.as_view(), name="task-list-create"),
+    path("tasks/wbs-tree/", WBSTreeAPIView.as_view(), name="wbs-tree"),
+    path("tasks/dependencies/", TaskDependencyListCreateAPIView.as_view(), name="task-dependency-list-create"),
+    path("tasks/<uuid:pk>/", TaskDetailAPIView.as_view(), name="task-detail"),
+    path("tasks/<uuid:task_id>/checklists/", TaskChecklistListCreateAPIView.as_view(), name="task-checklist-list-create"),
+    path("tasks/<uuid:task_id>/comments/", TaskCommentListCreateAPIView.as_view(), name="task-comment-list-create"),
+    path("tasks/<uuid:task_id>/timeline/", TaskActivityTimelineAPIView.as_view(), name="task-activity-timeline"),
+    # Sprint Engine Endpoints
+    path("sprints/", SprintListCreateAPIView.as_view(), name="sprint-list-create"),
+    path("sprints/<uuid:pk>/", SprintDetailAPIView.as_view(), name="sprint-detail"),
+    path("sprints/<uuid:pk>/start/", SprintStartAPIView.as_view(), name="sprint-start"),
+    path("sprints/<uuid:pk>/complete/", SprintCompleteAPIView.as_view(), name="sprint-complete"),
+    path("sprints/<uuid:sprint_id>/burndown/", SprintBurndownReportAPIView.as_view(), name="sprint-burndown"),
+    path("sprints/velocity/", SprintVelocityReportAPIView.as_view(), name="sprint-velocity"),
+    # Kanban Board Endpoints
+    path("boards/", KanbanBoardListCreateAPIView.as_view(), name="board-list-create"),
+    path("boards/<uuid:pk>/", KanbanBoardDetailAPIView.as_view(), name="board-detail"),
+    path("boards/tasks/<uuid:task_id>/move/", TaskMoveOnBoardAPIView.as_view(), name="task-move-on-board"),
+    # Release Planning Endpoints
+    path("releases/", ReleaseListCreateAPIView.as_view(), name="release-list-create"),
+    # Time Tracking & Timesheet Endpoints
+    path("time/start/", TimerStartAPIView.as_view(), name="timer-start"),
+    path("time/stop/", TimerStopAPIView.as_view(), name="timer-stop"),
+    path("time/worklogs/", TimeEntryListCreateAPIView.as_view(), name="worklog-list-create"),
+    path("timesheets/", TimesheetListCreateAPIView.as_view(), name="timesheet-list-create"),
+    path("timesheets/<uuid:pk>/approve/", TimesheetApproveAPIView.as_view(), name="timesheet-approve"),
+    path("timesheets/<uuid:pk>/reject/", TimesheetRejectAPIView.as_view(), name="timesheet-reject"),
+    path("productivity/", ProductivityMetricsAPIView.as_view(), name="productivity-metrics"),
+    # Resource Planning & Capacity Endpoints
+    path("resources/allocations/", ResourceAllocationListCreateAPIView.as_view(), name="resource-allocation-list-create"),
+    path("resources/capacity/", ResourceCapacityAPIView.as_view(), name="resource-capacity"),
+    path("resources/bench/", BenchManagementAPIView.as_view(), name="bench-management"),
+    path("resources/skill-match/", ResourceSkillMatchAPIView.as_view(), name="resource-skill-match"),
+    # Portfolio, Program & Executive PMO Endpoints
+    path("portfolios/", PortfolioListCreateAPIView.as_view(), name="portfolio-list-create"),
+    path("programs/", ProgramListCreateAPIView.as_view(), name="program-list-create"),
+    path("dashboards/executive/", ExecutiveDashboardAPIView.as_view(), name="executive-dashboard"),
+]

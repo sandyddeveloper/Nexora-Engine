@@ -5,14 +5,19 @@ from django.core.paginator import Paginator
 from core.responses import list_response
 
 
-def paginate_queryset(queryset, page_size=20, page=1):
-    """Return a paginated page object for the supplied queryset."""
+def paginate_queryset(queryset, serializer_class=None, page_size=20, page=1):
+    """Return a paginated dictionary for the supplied queryset."""
     page_size = min(max(int(page_size), 1), 100)
     page = max(int(page), 1)
     paginator = Paginator(queryset, page_size)
     page_obj = paginator.get_page(page)
+
+    items = list(page_obj.object_list)
+    if serializer_class is not None:
+        items = serializer_class(items, many=True).data
+
     return {
-        "data": list(page_obj.object_list),
+        "data": items,
         "pagination": {
             "page": page_obj.number,
             "page_size": page_size,
@@ -25,10 +30,16 @@ def paginate_queryset(queryset, page_size=20, page=1):
 
 
 def paginated_response(
-    queryset, message="Data retrieved successfully.", page_size=20, page=1
+    queryset,
+    serializer_class=None,
+    message="Data retrieved successfully.",
+    page_size=20,
+    page=1,
 ):
     """Build a DRF response payload with standard pagination metadata."""
-    result = paginate_queryset(queryset, page_size=page_size, page=page)
+    result = paginate_queryset(
+        queryset, serializer_class=serializer_class, page_size=page_size, page=page
+    )
     return list_response(
         result["data"],
         message=message,

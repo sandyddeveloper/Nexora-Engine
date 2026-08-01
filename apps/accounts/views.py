@@ -2,8 +2,10 @@
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 
+from core.pagination import paginated_response
 from core.responses import (
     created_response,
     deleted_response,
@@ -13,6 +15,14 @@ from core.responses import (
     updated_response,
     validation_error_response,
 )
+
+
+class LoginRateThrottle(AnonRateThrottle):
+    rate = "5/minute"
+
+
+class AuthRateThrottle(AnonRateThrottle):
+    rate = "10/minute"
 
 from . import selectors, services
 from .serializers import (
@@ -63,10 +73,14 @@ class UserListAPIView(APIView):
 
     def get(self, request):
         users = selectors.list_users()
-        serializer = UserSerializer(users, many=True)
-        return success_response(
+        page = request.query_params.get("page", 1)
+        page_size = request.query_params.get("page_size", 20)
+        return paginated_response(
+            users,
+            serializer_class=UserSerializer,
             message="Users retrieved successfully.",
-            data=serializer.data,
+            page=page,
+            page_size=page_size,
         )
 
     def post(self, request):
@@ -155,9 +169,10 @@ class RegisterAPIView(APIView):
     """Public endpoint for new user registration."""
 
     permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
 
     @extend_schema(
-        tags=["Auth"],
+        tags=["Signup"],
         summary="Register a New User",
         description=(
             "Create a new user account. Accepts email, password, "
@@ -199,9 +214,10 @@ class LoginAPIView(APIView):
     """Public endpoint for user login via JWT."""
 
     permission_classes = [AllowAny]
+    throttle_classes = [LoginRateThrottle]
 
     @extend_schema(
-        tags=["Auth"],
+        tags=["Signin / Login"],
         summary="Login",
         description=(
             "Authenticate a user with email and password. "
@@ -254,7 +270,7 @@ class RefreshTokenAPIView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["Auth"],
+        tags=["Tokens"],
         summary="Refresh Access Token",
         description=(
             "Accepts a valid, non-blacklisted refresh token and returns a new "
@@ -295,7 +311,7 @@ class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["Auth"],
+        tags=["Signin / Login"],
         summary="Logout",
         description="Blacklists the provided refresh token, invalidating the session.",
         request=LogoutSerializer,
@@ -333,7 +349,7 @@ class ChangePasswordAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["Auth"],
+        tags=["Signin / Login"],
         summary="Change Password",
         description=(
             "Allows an authenticated user to change their password by supplying "
@@ -377,9 +393,10 @@ class ForgotPasswordAPIView(APIView):
     """Public endpoint to request password reset token."""
 
     permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
 
     @extend_schema(
-        tags=["Auth"],
+        tags=["Signin / Login"],
         summary="Forgot Password",
         description=(
             "Generates a password reset token if account exists. Always returns "
@@ -411,9 +428,10 @@ class ResetPasswordAPIView(APIView):
     """Public endpoint to reset password using token."""
 
     permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
 
     @extend_schema(
-        tags=["Auth"],
+        tags=["Signin / Login"],
         summary="Reset Password",
         description="Resets user password using a valid one-time token.",
         request=ResetPasswordSerializer,
@@ -451,7 +469,7 @@ class VerifyEmailAPIView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["Auth"],
+        tags=["Signup"],
         summary="Verify Email",
         description="Verifies user email address using a valid verification token.",
         request=VerifyEmailSerializer,
@@ -486,9 +504,10 @@ class ResendVerificationAPIView(APIView):
     """Public endpoint to resend email verification token."""
 
     permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
 
     @extend_schema(
-        tags=["Auth"],
+        tags=["Signup"],
         summary="Resend Verification Email",
         description=(
             "Resends verification token if account requires verification. Always "

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -46,12 +47,19 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "apps.accounts",
+    "apps.roles",
     "apps.organizations",
+    "apps.employees",
+    "apps.attendance",
+    "apps.leaves",
+    "apps.payroll",
+    "apps.projects",
     "apps.common",
     "apps.health",
 ]
 
 MIDDLEWARE = [
+    "core.middleware.CorrelationIdMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -75,6 +83,14 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/day",
+        "user": "1000/day",
+    },
     "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
 }
 
@@ -97,6 +113,19 @@ SPECTACULAR_SETTINGS = {
         "filter": True,
     },
     "REDOC_DIST": "SIDECAR",
+    "ENUM_NAME_OVERRIDES": {
+        "AttendanceStatusEnum": "apps.attendance.models.AttendanceStatus",
+        "AttendanceSourceEnum": "apps.attendance.models.AttendanceSource",
+        "AttendanceApprovalStatusEnum": "apps.attendance.models.ApprovalStatus",
+        "AttendanceCorrectionStatusEnum": "apps.attendance.models.CorrectionStatus",
+        "BreakTypeEnum": "apps.attendance.models.BreakType",
+        "EmploymentStatusEnum": "apps.employees.models.EmploymentStatus",
+        "OrganizationStatusEnum": "apps.organizations.models.OrganizationStatus",
+        "RosterStatusEnum": "apps.organizations.models.RosterStatus",
+        "RosterPeriodTypeEnum": "apps.organizations.models.RosterPeriodType",
+        "RotationTypeEnum": "apps.organizations.models.RotationType",
+        "SwapStatusEnum": "apps.organizations.models.SwapStatus",
+    },
 }
 
 ROOT_URLCONF = "config.urls"
@@ -266,3 +295,10 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+if "test" in sys.argv:
+    REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = []
+    REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {
+        "anon": "10000/min",
+        "user": "10000/min",
+    }

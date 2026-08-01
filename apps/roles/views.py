@@ -1,9 +1,10 @@
 """Views for the roles app."""
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from core.pagination import paginated_response
 from core.responses import (
     created_response,
     deleted_response,
@@ -14,6 +15,7 @@ from core.responses import (
 )
 
 from . import selectors, services
+from .permissions import HasRolePermission
 from .serializers import (
     RoleCreateSerializer,
     RoleDetailSerializer,
@@ -45,13 +47,18 @@ from .serializers import (
 class RoleListAPIView(APIView):
     """List all roles or create a new role."""
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated, HasRolePermission]
 
     def get(self, request):
         roles = selectors.list_roles()
-        return success_response(
+        page = request.query_params.get("page", 1)
+        page_size = request.query_params.get("page_size", 20)
+        return paginated_response(
+            roles,
+            serializer_class=RoleSerializer,
             message="Roles retrieved successfully.",
-            data=RoleSerializer(roles, many=True).data,
+            page=page,
+            page_size=page_size,
         )
 
     def post(self, request):
@@ -106,7 +113,7 @@ class RoleListAPIView(APIView):
 class RoleDetailAPIView(APIView):
     """Retrieve, update, or delete a specific role."""
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated, HasRolePermission]
 
     def get(self, request, pk):
         role = selectors.get_role(role_id=pk)
